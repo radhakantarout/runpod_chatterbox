@@ -1,22 +1,21 @@
-FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    wget \
-    curl \
-    ffmpeg
-
-RUN python -m pip install --no-deps chatterbox-tts
+FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
 
 WORKDIR /
-COPY requirements.txt /requirements.txt
-RUN pip install -r requirements.txt
+
+# Install system deps
+RUN apt-get update && apt-get install -y ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
+
+# Install chatterbox without overriding torch
+RUN pip install --no-cache-dir --no-deps chatterbox-tts
+
+# Install remaining deps manually
+RUN pip install --no-cache-dir \
+    numpy scipy soundfile tokenizers conformer einops \
+    encodec s3tokenizer resemble-perth pyyaml safetensors \
+    huggingface_hub transformers diffusers runpod boto3
+
+# Copy handler
 COPY rp_handler.py /
 
-RUN python -c "from chatterbox.tts import ChatterboxTTS; model = ChatterboxTTS.from_pretrained(device='cuda')"
-
-# Start the container
-CMD ["python3", "-u", "rp_handler.py"]
-
-
+# Start — model downloads on first run, not during build
+CMD ["python", "rp_handler.py"]
