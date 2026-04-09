@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir --no-deps chatterbox-tts
 RUN pip install --no-cache-dir \
     numpy scipy soundfile tokenizers conformer einops \
     encodec s3tokenizer resemble-perth pyyaml safetensors \
-    huggingface_hub transformers diffusers runpod boto3
+    huggingface_hub transformers diffusers runpod boto3 \
+    librosa audioread
 
 # Copy handler
 COPY rp_handler.py /
